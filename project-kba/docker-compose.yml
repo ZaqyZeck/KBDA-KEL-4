@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # 1. Database Simulasi ERP (PostgreSQL) - Sumber Data (OLTP)
+  postgres:
+    image: postgres:15
+    container_name: odoo_postgres_sim
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: odoo_pizza
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # 2. Data Warehouse (ClickHouse) - OLAP
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse_dwh
+    ports:
+      - '8123:8123' # Port HTTP
+      - '9000:9000' # Port Native Client
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_USER: admin
+      CLICKHOUSE_PASSWORD: password
+
+  # 3. Visualisasi & BI (Metabase)
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase_bi
+    ports:
+      - '3000:3000'
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: odoo_pizza
+      MB_DB_PORT: 5432
+      MB_DB_USER: admin
+      MB_DB_PASS: password
+      MB_DB_HOST: postgres
+    depends_on:
+      - postgres
+      - clickhouse
+
+volumes:
+  pgdata:
+  clickhouse_data:
