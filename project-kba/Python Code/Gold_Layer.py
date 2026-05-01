@@ -3,8 +3,9 @@ from sqlalchemy import create_engine
 from urllib.parse import quote_plus
 
 # 🔌 Koneksi ke MySQL
+# nanti sesuaikan dengan password mysql workbench masing masing
 password = quote_plus("@Ulunnuha21_mysql")
-engine = create_engine(f"mysql+pymysql://root:{password}@localhost:3306/bronze")
+engine = create_engine(f"mysql+pymysql://root:{password}@localhost:3306/kba_pizza_sales")
 
 # 📥 Load dari Silver Layer
 query = "SELECT * FROM silver_pizza_sales_clean"
@@ -19,13 +20,8 @@ print(f"📊 Data Silver: {df.shape[0]} baris")
 df["order_date"] = pd.to_datetime(df["order_date"], dayfirst=True, errors="coerce")
 df["order_time"] = pd.to_datetime(df["order_time"], format="%H:%M:%S", errors="coerce")
 
-# ⚠️ JANGAN DROP DATA → hanya isi default
 df["order_date"] = df["order_date"].fillna(pd.to_datetime("2000-01-01"))
 df["order_time"] = df["order_time"].fillna(pd.to_datetime("00:00:00"))
-
-# ================================
-# 📚 DIMENSION: dim_pizza
-# ================================
 
 dim_pizza = df[[
     "pizza_id",
@@ -36,9 +32,6 @@ dim_pizza = df[[
 
 print(f"📚 dim_pizza: {dim_pizza.shape[0]} baris")
 
-# ================================
-# 📅 DIMENSION: dim_date
-# ================================
 
 dim_date = df[["order_date"]].drop_duplicates().copy()
 

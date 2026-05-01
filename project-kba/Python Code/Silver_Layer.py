@@ -3,32 +3,26 @@ from sqlalchemy import create_engine
 from urllib.parse import quote_plus
 
 # 🔌 Koneksi ke MySQL
-password = quote_plus("@Ulunnuha21_mysql")
-engine = create_engine(f"mysql+pymysql://root:{password}@localhost:3306/bronze")
+# nanti sesuaikan dengan password mysql workbench masing masing
+password = quote_plus("@Ulunnuha21_mysql") 
+engine = create_engine(f"mysql+pymysql://root:{password}@localhost:3306/kba_pizza_sales")
 
 # 📥 Load data dari Bronze Layer
-query = "SELECT * FROM pizza_sales"
+query = "SELECT * FROM bronze_pizza_sales_raw"
 df = pd.read_sql(query, engine)
 
 print(f"📊 Data awal (Bronze): {df.shape[0]} baris")
 
-# ================================
-# 🧹 SILVER PROCESS + VALIDATION
-# ================================
-
-# 1. Hapus NULL pada kolom penting
 before = df.shape[0]
 df = df.dropna(subset=["order_id", "pizza_id", "quantity", "total_price"])
 after = df.shape[0]
 print(f"🧹 Hapus NULL: {before} → {after} (hapus {before - after} baris)")
 
-# 2. Remove duplicate
 before = df.shape[0]
 df = df.drop_duplicates()
 after = df.shape[0]
 print(f"🧹 Hapus duplikat: {before} → {after} (hapus {before - after} baris)")
 
-# 3. Konversi tipe data
 df["order_id"] = df["order_id"].astype(int)
 df["pizza_id"] = df["pizza_id"].astype(int)
 df["quantity"] = df["quantity"].astype(int)
